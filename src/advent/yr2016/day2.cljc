@@ -1,6 +1,10 @@
 (ns advent.yr2016.day2
   (:require [clojure.string :as cs]))
 
+;; Strategy: use maps to store state transitions.
+;; For each series of moves, compose maps together
+;; as a state transition function.
+
 (def transitions-part1
   "State transitions for 3x3 numpad."
   {::up    {1 1, 2 2, 3 3,
