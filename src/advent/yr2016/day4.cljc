@@ -63,6 +63,7 @@
       (char)))
 
 (def lower-alpha
+  "Lowercase chars from a to z."
   (into [] (map char) (range (int \a) (inc (int \z)))))
 
 (defn shift
@@ -78,19 +79,19 @@
 (defn decrypt
   "Decrypt a room map."
   [{:keys [::encrypted ::sector] :as room}]
-  (assoc room ::decrypted
-         (-> encrypted
-             (shift (util/parse-int sector))
-             (cs/replace #"-" " "))))
+  (-> encrypted
+      (shift (util/parse-int sector))
+      (cs/replace #"-" " ")
+      (as-> x (assoc room ::decrypted x))))
 
 (defn answer2
   [input]
   (->> (cs/split (cs/trim input) #"\n")
-       (into [] (comp (map parse-room)
-                      (filter real?)
-                      (map decrypt)
-                      (filter (comp #(re-find #"north" %)
-                                    ::decrypted))
-                      (map ::sector)))
+       (eduction (comp (map parse-room)
+                       (filter real?)
+                       (map decrypt)
+                       (filter (comp #(re-find #"north" %)
+                                     ::decrypted))
+                       (map ::sector)))
        (first)))
 
