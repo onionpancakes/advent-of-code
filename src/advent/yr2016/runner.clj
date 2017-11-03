@@ -14,7 +14,7 @@
 (->> (io/resource "yr2016/day1/input.txt")
      (slurp)
      (day1/answer2)
-     (println "Day1 Part1:"))
+     (println "Day1 Part2:"))
 
 ;; Day 2
 

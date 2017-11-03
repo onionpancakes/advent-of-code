@@ -72,19 +72,23 @@
 
 ;; Part 2
 
-(defn steps
+(defmulti segment-steps
   "Given a vertical or horizontal line, return all
   steps between the line's endpoints (inclusive)."
-  [[[xa ya] [xb yb]]]
-  (cond
-    (= xa xb) (->> (if (<= ya yb)
-                     (range ya (inc yb))
-                     (range ya (dec yb) -1))
-                   (map #(vector xa %)))
-    (= ya yb) (->> (if (<= xa xb)
-                     (range xa (inc xb))
-                     (range xa (dec xb) -1))
-                   (map #(vector % ya)))))
+  (fn [[[xa ya] [xb yb]]]
+    (cond
+      (= xa xb) :segment/vertical
+      (= ya yb) :segment/horizontal)))
+
+(defmethod segment-steps :segment/vertical
+  [[[x ya] [_ yb]]]
+  (let [step (if (< ya yb) 1 -1)]
+    (map #(vector x %) (range ya (+ yb step) step))))
+
+(defmethod segment-steps :segment/horizontal
+  [[[xa y] [xb _]]]
+  (let [step (if (< xa xb) 1 -1)]
+    (map #(vector % y) (range xa (+ xb step) step))))
 
 (defn first-duplicate
   [xs]
@@ -108,12 +112,10 @@
                   #(subvec % 0 2)))
        ;; Partition coordinates as line segments.
        (partition 2 1)
-       ;; Line segments into inbetween steps.
-       (map steps)
+       ;; Get steps inbetween line segment's endpoints.
+       (map segment-steps)
        ;; Remove overlapping endpoints.
-       (map-indexed #(if-not (zero? %1)
-                       (rest %2)
-                       %2))
+       (map-indexed #(if-not (zero? %1) (rest %2) %2))
        (mapcat identity)
        (first-duplicate)
 
