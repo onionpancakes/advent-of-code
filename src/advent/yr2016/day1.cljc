@@ -67,7 +67,8 @@
        (take 2)
        (map util/abs)
        (apply +)
-       (int)))
+       (int)
+       (str)))
 
 
 ;; Part 2
@@ -121,4 +122,5 @@
 
        (map util/abs)
        (apply +)
-       (int)))
+       (int)
+       (str)))

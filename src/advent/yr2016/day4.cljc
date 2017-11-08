@@ -48,7 +48,8 @@
                        (filter real?)
                        (map ::sector)
                        (map util/parse-int)))
-       (reduce + 0)))
+       (reduce + 0)
+       (str)))
 
 ;; Part 2
 
