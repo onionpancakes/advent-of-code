@@ -14,21 +14,20 @@
   "Sorts a sequence of chars in order of descending
   frequency, with ties broken in alphabetical order."
   [chs]
-  (->> (frequencies chs)
-       ;; the (comp - int key) impls alphabetical sort.
-       (sort-by (juxt val (comp - int key))
-                #(compare %2 %1))
-       (map key)))
+  (sort-by (juxt (frequencies chs) (comp - int))
+           #(compare %2 %1)
+           chs))
 
-(defn valid-checksum?
+(defn matching-checksum?
   "True if checksum contains the most common
   characters in encrypted, with ties broken in
   alphabetical order."
-  [checksum encrypted]
+  [encrypted checksum]
   (let [chset (set checksum)]
     (->> encrypted
          (eduction (remove (partial = \-)))
          (sort-common-alpha)
+         (eduction (dedupe))
          (into #{} (take (count chset)))
          (= chset))))
 
@@ -39,13 +38,14 @@
   encrypted string."
   [{:keys [::encrypted ::checksum]}]
   (and (= (count (set checksum)) 5)
-       (valid-checksum? checksum encrypted)))
+       (matching-checksum? encrypted checksum)))
 
 (defn answer1
   [input]
-  (->> (cs/split (cs/trim input) #"\n")
-       (eduction (comp (map parse-room)
-                       (filter real?)
+  (->> (cs/split input #"\n")
+       (eduction (comp (map cs/trim)
+                       (map parse-room)))
+       (eduction (comp (filter real?)
                        (map ::sector)
                        (map util/parse-int)))
        (reduce + 0)
@@ -53,43 +53,47 @@
 
 ;; Part 2
 
+(defn relative-shift
+  "Given a shift, and a start index between 0 and
+  window-size, returns the relative shift from the
+  start index."
+  [start window-size shift]
+  (- (mod (+ start shift) window-size) start))
+
 (defn shift-lower-alpha
   "Shift a lowercase character."
-  [ch n-shift]
-  (-> (int ch)
-      (- (int \a))
-      (+ n-shift)
-      (mod 26)
-      (+ (int \a))
+  [ch shift]
+  (-> (- (int ch) (int \a))
+      (relative-shift 26 shift)
+      (+ (int ch))
       (char)))
 
 (def lower-alpha
   "Lowercase chars from a to z."
   (into [] (map char) (range (int \a) (inc (int \z)))))
 
-(defn shift
+(defn shift-lower-alpha-string
   "Shifts lowercase characters in a string."
-  [text n-shift]
-  (let [chmapping (->> lower-alpha
-                       (map #(shift-lower-alpha % n-shift))
-                       (zipmap lower-alpha))]
-    (->> text
-         (map #(get chmapping % %))
+  [s shift]
+  (let [shift-entry (juxt identity #(shift-lower-alpha % shift))
+        chmapping (into {} (map shift-entry) lower-alpha)]
+    (->> (map #(get chmapping % %) s)
          (apply str))))
 
 (defn decrypt
   "Decrypt a room map."
   [{:keys [::encrypted ::sector] :as room}]
   (-> encrypted
-      (shift (util/parse-int sector))
+      (shift-lower-alpha-string (util/parse-int sector))
       (cs/replace #"-" " ")
       (as-> x (assoc room ::decrypted x))))
 
 (defn answer2
   [input]
-  (->> (cs/split (cs/trim input) #"\n")
-       (eduction (comp (map parse-room)
-                       (filter real?)
+  (->> (cs/split input #"\n")
+       (eduction (comp (map cs/trim)
+                       (map parse-room)))
+       (eduction (comp (filter real?)
                        (map decrypt)
                        (filter (comp #(re-find #"north" %)
                                      ::decrypted))
