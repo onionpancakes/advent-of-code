@@ -1,6 +1,5 @@
 (ns advent.yr2016.day1-test
   (:require [clojure.test :refer [deftest is are]]
-            [clojure.test.check :as tc]
             [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
             [clojure.test.check.clojure-test :refer [defspec]]

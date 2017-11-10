@@ -1,12 +1,10 @@
 (ns advent.yr2016.day4-test
   (:require [clojure.test :refer [deftest testing is are]]
-            [clojure.test.check :as tc]
             [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.java.io :refer [resource]]
             [clojure.string :as c.str]
-            [clojure.set :as c.set]
             [advent.yr2016.day4 :as day4]))
 
 ;; Answers according to advent website.
