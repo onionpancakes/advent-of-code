@@ -3,7 +3,7 @@
             [advent.util :as util]))
 
 (def room-pattern
-  #"([a-z\-]+)-(\d+)\[([a-z]+)\]")
+  #"([a-z\-]*)-(\d+)\[([a-z]*)\]")
 
 (defn parse-room
   [room-string]
@@ -31,13 +31,15 @@
          (into #{} (take (count chset)))
          (= chset))))
 
+(def real-checksum-size 5)
+
 (defn real?
   "Given a parsed room map, return true if it is real.
   Rooms are considered real if the checksum has 5
   unique characters and checksum is valid with its
   encrypted string."
   [{:keys [::encrypted ::checksum]}]
-  (and (= (count (set checksum)) 5)
+  (and (= (count (set checksum)) real-checksum-size)
        (matching-checksum? encrypted checksum)))
 
 (defn answer1

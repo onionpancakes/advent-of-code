@@ -2,7 +2,10 @@
 
 (defn parse-int
   [istr]
-  #?(:clj (Integer/parseInt istr)))
+  #?(:clj (try
+            (Integer/parseInt istr)
+            (catch NumberFormatException _
+              (bigint istr)))))
 
 (defn abs
   [n]

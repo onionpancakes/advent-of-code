@@ -52,22 +52,38 @@
 
 (defn direction-matrix
   "Convert direction vector into its matrix equivalent."
-  [[turn paces]]
-  (cm/mmul (forward paces) (turn-mapping turn)))
+  [[turn steps]]
+  (cm/mmul (forward steps) (turn-mapping turn)))
+
+(defn travel
+  "Given a initial vector and a sequence of direction
+  vectors, returns the vector of the position travled
+  to."
+  [initial directions]
+  (transduce (map direction-matrix)
+             (completing #(cm/mmul %2 %1))
+             initial
+             directions))
+
+(defn int-coords
+  "Coords of vector, cast to int."
+  [[x y _ _]]
+  [(int x) (int y)])
+
+(defn distance
+  "Grid distance"
+  [[xa ya] [xb yb]]
+  (+ (util/abs (- xb xa))
+     (util/abs (- yb ya))))
 
 (defn answer1
   [input]
   (->> (cs/split input #",")
        (eduction (comp (map cs/trim)
                        (map parse-direction)))
-       (transduce (map direction-matrix)
-                  (completing #(cm/mmul %2 %1))
-                  [0 0 0 1]) ; at origin, facing north
-       ;; Sum the abs of the coordinates.
-       (take 2)
-       (map util/abs)
-       (apply +)
-       (int)
+       (travel [0 0 0 1]) ; at origin, facing north
+       (int-coords)
+       (distance [0 0])
        (str)))
 
 
@@ -92,6 +108,7 @@
     (map #(vector % y) (range xa (+ xb step) step))))
 
 (defn first-duplicate
+  "Returns the first duplicate item in a sequence."
   [xs]
   (loop [seen #{} items (seq xs)]
     (if items
@@ -100,27 +117,37 @@
           item
           (recur (conj seen item) (next items)))))))
 
+(defn travel-stops
+  "Returns all intermediary vectors for each direction
+  traveled, including the initial origin vector."
+  [initial directions]
+  (->> directions
+       (map direction-matrix)
+       (reductions #(cm/mmul %2 %1) initial)))
+
+(defn trail
+  "Sequence of intermediary integer coordinates
+  between the given integer coords."
+  [coords]
+  (->> coords
+       (partition 2 1)
+       (map segment-steps)
+       (map-indexed #(if (zero? %1) %2 (rest %2)))
+       (mapcat identity)))
+
+(defn first-intersect
+  [initial directions]
+  (->> directions
+       (travel-stops initial)
+       (map int-coords)
+       (trail)
+       (first-duplicate)))
+
 (defn answer2
   [input]
   (->> (cs/split input #",")
-       (map (comp direction-matrix
-                  parse-direction
-                  cs/trim))
-       ;; Get all vectors for each direction step.
-       (reductions #(cm/mmul %2 %1) [0 0 0 1])
-       ;; Get coordinates from vectors, cast to ints.
-       (map (comp #(into [] (map int) %)
-                  #(subvec % 0 2)))
-       ;; Partition coordinates as line segments.
-       (partition 2 1)
-       ;; Get steps inbetween line segment's endpoints.
-       (map segment-steps)
-       ;; Remove overlapping endpoints.
-       (map-indexed #(if-not (zero? %1) (rest %2) %2))
-       (mapcat identity)
-       (first-duplicate)
-
-       (map util/abs)
-       (apply +)
-       (int)
+       (map (comp parse-direction cs/trim))
+       (first-intersect [0 0 0 1])
+       (distance [0 0])
        (str)))
+
