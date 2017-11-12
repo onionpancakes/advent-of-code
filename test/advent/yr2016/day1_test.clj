@@ -156,15 +156,14 @@
 
 ;; Prop test matrices
 
-;; Tranveling forward should not change a position vector's
-;; orientation.
+;; Traveling forward should not change orientation.
 (defspec forward-matrix-perserves-orientation
   (prop/for-all [[_ _ dx dy :as pos] position
                  n gen/pos-int]
     (let [[_ _ fdx fdy] (cm/mmul (day1/forward n) pos)]
       (and (== fdx dx) (== fdy dy)))))
 
-;; Tranveling forward by n steps should increase
+;; Traveling forward by n steps should increase
 ;; distance by n.
 (defspec forward-matrix-distance
   (prop/for-all [[x y _ _ :as pos] position
@@ -208,7 +207,7 @@
         (as-> x (take 2 x))
         (cm/e== [x y]))))
 
-;; Properties test for constrainted directions.
+;; Properties test using constrained directions.
 
 (defn concatenating
   [generator]
