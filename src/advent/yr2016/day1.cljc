@@ -8,7 +8,7 @@
 
 ;; Vectors have 4 dimensions: [x y dx dy]
 ;; x and y are coordinates
-;; dx and dy are directions for x and y.
+;; dx and dy are the orientation for x and y.
 ;; East is when dx = 1; west when dx = -1.
 ;; North is when dy = 1; south when dy = -1.
 
@@ -33,14 +33,14 @@
    [0 0 0 1]])
 
 (def turn-left
-  "Matrix which rotates direction left."
+  "Matrix which rotates orientation left."
   [[1 0 0 0]
    [0 1 0 0]
    [0 0 0 -1]
    [0 0 1 0]])
 
 (def turn-right
-  "Matrix which rotates direction right."
+  "Matrix which rotates orientation right."
   [[1 0 0 0]
    [0 1 0 0]
    [0 0 0 1]
@@ -56,9 +56,9 @@
   (cm/mmul (forward steps) (turn-mapping turn)))
 
 (defn travel
-  "Given a initial vector and a sequence of direction
-  vectors, returns the vector of the position travled
-  to."
+  "Given a initial position vector and direction
+  vectors, returns the vector of the position
+  traveled to."
   [initial directions]
   (transduce (map direction-matrix)
              (completing #(cm/mmul %2 %1))
@@ -66,7 +66,8 @@
              directions))
 
 (defn int-coords
-  "Coords of vector, cast to int."
+  "Return the coordinate component of a position vector,
+  casted as ints."
   [[x y _ _]]
   [(int x) (int y)])
 
@@ -118,7 +119,7 @@
           (recur (conj seen item) (next items)))))))
 
 (defn travel-stops
-  "Returns all intermediary vectors for each direction
+  "Returns all intermediary position vectors for each direction
   traveled, including the initial origin vector."
   [initial directions]
   (->> directions

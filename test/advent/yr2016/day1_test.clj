@@ -4,6 +4,7 @@
             [clojure.test.check.properties :as prop]
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.java.io :refer [resource]]
+            [clojure.core.matrix :as cm]
             [advent.yr2016.day1 :as day1]
             [advent.util :as util]))
 
@@ -16,22 +17,6 @@
 
 ;; Unit tests
 
-;; core.matrix converts everything to floats
-;; need to use == compare values.
-
-(defn ==vector
-  "Compare vectors with ==."
-  [a b]
-  (and (= (count a) (count b))
-       (->> (map vector a b)
-            (every? (partial apply ==)))))
-
-(defn ==matrix
-  "Compare matrices using ==."
-  [a b]
-  (and (= (count a) (count b))
-       (==vector (mapcat identity a) (mapcat identity b))))
-
 (deftest parse-direction-test
   (are [r s] (= r (day1/parse-direction s))
     [:R 0] "R0"
@@ -41,7 +26,7 @@
     [:L 123] "L123"))
 
 (deftest direction-matrix-test
-  (are [r s] (==matrix r (day1/direction-matrix s))
+  (are [r s] (cm/e== r (day1/direction-matrix s))
     [[1 0 0 1]
      [0 1 -1 0]
      [0 0 0 1]
@@ -60,7 +45,7 @@
      [0 0 1 0]] [:L 2]))
 
 (deftest travel-test
-  (are [r init dirs] (==vector r (day1/travel init dirs))
+  (are [r init dirs] (cm/e== r (day1/travel init dirs))
     [0 0 0 1] [0 0 0 1] []
     [1 0 1 0] [0 0 0 1] [[:R 1]]
     [1 1 0 1] [0 0 0 1] [[:R 1] [:L 1]]
@@ -121,7 +106,7 @@
 
 (deftest travel-stops-test
   (are [r init dirs] (->> (map vector r (day1/travel-stops init dirs))
-                          (every? (partial apply ==vector)))
+                          (every? (partial apply cm/e==)))
     [[0 0 0 1]] [0 0 0 1] []
     [[0 0 0 1]
      [1 0 1 0]] [0 0 0 1] [[:R 1]]
@@ -163,6 +148,68 @@
 
 ;; Properties test
 
+(def position
+  "Random position vector."
+  (-> (gen/elements [[0 1] [1 0] [0 -1] [-1 0]])
+      (gen/bind (fn [[dx dy]]
+                  (gen/tuple gen/int gen/int (gen/return dx) (gen/return dy))))))
+
+;; Prop test matrices
+
+;; Tranveling forward should not change a position vector's
+;; orientation.
+(defspec forward-matrix-perserves-orientation
+  (prop/for-all [[_ _ dx dy :as pos] position
+                 n gen/pos-int]
+    (let [[_ _ fdx fdy] (cm/mmul (day1/forward n) pos)]
+      (and (== fdx dx) (== fdy dy)))))
+
+;; Tranveling forward by n steps should increase
+;; distance by n.
+(defspec forward-matrix-distance
+  (prop/for-all [[x y _ _ :as pos] position
+                 n gen/pos-int]
+    (-> (day1/forward n)
+        (cm/mmul pos)
+        (as-> x (take 2 x))
+        (cm/distance [x y])
+        (== n))))
+
+;; The orientation before and after turning left
+;; should have a dot product of zero.
+(defspec turn-left-orthogonal
+  (prop/for-all [[_ _ dx dy :as pos] position]
+    (-> day1/turn-left
+        (cm/mmul pos)
+        (as-> x (drop 2 x))
+        (cm/inner-product [dx dy])
+        (zero?))))
+
+(defspec turn-right-orthogonal
+  (prop/for-all [[_ _ dx dy :as pos] position]
+    (-> day1/turn-right
+        (cm/mmul pos)
+        (as-> x (drop 2 x))
+        (cm/inner-product [dx dy])
+        (zero?))))
+
+;; Turns don't affect coordinates.
+(defspec turn-left-coordinate-identity
+  (prop/for-all [[x y _ _ :as pos] position]
+    (-> day1/turn-left
+        (cm/mmul pos)
+        (as-> x (take 2 x))
+        (cm/e== [x y]))))
+
+(defspec turn-right-coordinate-identity
+  (prop/for-all [[x y _ _ :as pos] position]
+    (-> day1/turn-right
+        (cm/mmul pos)
+        (as-> x (take 2 x))
+        (cm/e== [x y]))))
+
+;; Properties test for constrainted directions.
+
 (defn concatenating
   [generator]
   (gen/fmap (partial into [] cat) generator))
@@ -200,15 +247,10 @@
                                    (gen/return [:L n])
                                    (gen/return [:L n]))))))
 
-(def initial
-  (-> (gen/elements [[0 1] [1 0] [0 -1] [-1 0]])
-      (gen/bind (fn [[dx dy]]
-                  (gen/tuple gen/int gen/int (gen/return dx) (gen/return dy))))))
-
 ;; When traveling diagonally, the x and y position of the destination
 ;; (after offsetting initial position) should have equal magnitude.
 (defspec diagonal-travel
-  (prop/for-all [[ix iy _ _ :as init] initial
+  (prop/for-all [[ix iy _ _ :as init] position
                  dirs (concatenating (gen/vector right-left))]
     (let [[x y _ _] (day1/int-coords (day1/travel init dirs))]
       (= (util/abs (- x ix))
@@ -216,7 +258,7 @@
 
 ;; Even with loops.
 (defspec diagonal-travel-with-loops
-  (prop/for-all [[ix iy _ _ :as init] initial
+  (prop/for-all [[ix iy _ _ :as init] position
                  dirs (concatenating (gen/vector
                                       (gen/one-of [right-left
                                                    clockwise
@@ -228,7 +270,7 @@
 ;; First intersection (if any) should be the first uturn,
 ;; which should be on the diagonal path.
 (defspec first-loop-intersection
-  (prop/for-all [[ix iy _ _ :as init] initial
+  (prop/for-all [[ix iy _ _ :as init] position
                  dirs (concatenating (gen/vector
                                       (gen/one-of [right-left
                                                    uturn])))]
