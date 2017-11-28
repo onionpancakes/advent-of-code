@@ -152,3 +152,27 @@
        (distance [0 0])
        (str)))
 
+;; Part 2, version 2
+
+;; Use matrixes to generate intermediate coordinates
+;; directly. Less complex than generating intermediate
+;; coordinates from line segment end points.
+
+(defn intermediate-matrixes
+  "Given a direction vector, return a sequence of
+  matrixes which represents its intermediate steps."
+  [[turn steps]]
+  (cons (cm/mmul (forward 1) (turn-mapping turn))
+        (repeat (dec steps) (forward 1))))
+
+(defn answer2-v2
+  [input]
+  (->> (cs/split input #",")
+       (map (comp parse-direction cs/trim))
+       (mapcat intermediate-matrixes)
+       (reductions #(cm/mmul %2 %1) [0 0 0 1])
+       (map int-coords)
+       (first-duplicate)
+       (distance [0 0])
+       (str)))
+
