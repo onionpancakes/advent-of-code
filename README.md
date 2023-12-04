@@ -8,4 +8,4 @@ Advent of Code solutions in Clojure.
 
 To run, launch a repl and eval the expressions in `advent.yr2016.runner`.
 
-To test, run `lein test` in your terminal.
+To test, run `clj -X:run-tests` in your terminal.
