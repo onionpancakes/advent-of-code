@@ -1,6 +1,6 @@
-(ns advent.yr2016.day4
+(ns dev.onionpancakes.adventofcode.2016.day4
   (:require [clojure.string :as cs]
-            [advent.util :as util]))
+            [dev.onionpancakes.adventofcode.2016.util :as util]))
 
 (def room-pattern
   #"([a-z\-]*)-(\d+)\[([a-z]*)\]")

@@ -1,7 +1,7 @@
-(ns advent.yr2016.day1
+(ns dev.onionpancakes.adventofcode.2016.day1
   (:require [clojure.core.matrix :as cm]
             [clojure.string :as cs]
-            [advent.util :as util]))
+            [dev.onionpancakes.adventofcode.2016.util :as util]))
 
 ;; Strategy: compute the answer using translation
 ;; and rotation matrixes.

@@ -1,8 +1,8 @@
-(ns advent.util-test
+(ns dev.onionpancakes.adventofcode.2016.tests.util-test
   (:require [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
             [clojure.test.check.clojure-test :refer [defspec]]
-            [advent.util :as util]))
+            [dev.onionpancakes.adventofcode.2016.util :as util]))
 
 (defspec parse-int-test
   (prop/for-all [i gen/int]

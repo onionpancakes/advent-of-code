@@ -1,4 +1,4 @@
-(ns advent.yr2016.day2
+(ns dev.onionpancakes.adventofcode.2016.day2
   (:require [clojure.string :as cs]))
 
 ;; Strategy: use maps to store state transitions.

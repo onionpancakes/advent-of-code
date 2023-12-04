@@ -1,11 +1,11 @@
-(ns advent.yr2016.day2-test
+(ns dev.onionpancakes.adventofcode.2016.tests.test-day2
   (:require [clojure.test :refer [deftest testing is are]]
             [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.java.io :refer [resource]]
             [clojure.string :as c.str]
-            [advent.yr2016.day2 :as day2]))
+            [dev.onionpancakes.adventofcode.2016.day2 :as day2]))
 
 ;; Answers according to advent website.
 

@@ -1,4 +1,4 @@
-(ns advent.util
+(ns dev.onionpancakes.adventofcode.2016.util
   (:refer-clojure :exclude [abs]))
 
 (defn parse-int

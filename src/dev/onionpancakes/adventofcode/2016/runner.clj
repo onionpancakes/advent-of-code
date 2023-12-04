@@ -1,8 +1,8 @@
 (ns advent.yr2016.runner
   (require [clojure.java.io :as io]
-           [advent.yr2016.day1 :as day1]
-           [advent.yr2016.day2 :as day2]
-           [advent.yr2016.day4 :as day4]))
+           [dev.onionpancakes.adventofcode.2016.day1 :as day1]
+           [dev.onionpancakes.adventofcode.2016.day2 :as day2]
+           [dev.onionpancakes.adventofcode.2016.day4 :as day4]))
 
 ;; Day 1
 
