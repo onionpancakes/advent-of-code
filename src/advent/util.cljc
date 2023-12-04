@@ -1,4 +1,5 @@
-(ns advent.util)
+(ns advent.util
+  (:refer-clojure :exclude [abs]))
 
 (defn parse-int
   [istr]
