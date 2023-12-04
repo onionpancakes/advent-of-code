@@ -73,8 +73,6 @@
   [line]
   (let [first-digit (re-find re-forward-digit line)
         last-digit  (re-find re-reverse-digit (apply str (reverse line)))]
-    (println line first-digit last-digit (to-number-str first-digit)
-             (to-number-str last-digit))
     (parse-long (str (to-number-str first-digit)
                      (to-number-str last-digit)))))
 
