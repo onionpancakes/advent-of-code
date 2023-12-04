@@ -10,7 +10,7 @@
 ;; Answers according to advent website.
 
 (deftest answers
-  (let [input (slurp (resource "yr2016/day4/input.txt"))]
+  (let [input (slurp (resource "2016/day4/input.txt"))]
     (is (= "137896" (day4/answer1 input)))
     (is (= "501" (day4/answer2 input)))))
 
